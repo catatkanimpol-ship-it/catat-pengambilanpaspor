@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard Paspor</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #f4f6f9;
+  margin: 0;
+}
+
+/* HEADER */
+.header {
+  background: #0b2a4a;
+  padding: 10px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 900px;
+  margin: auto;
+}
+
+.logo {
+  width: 50px;
+}
+
+.title {
+  color: #f1c40f;
+  font-weight: bold;
+  text-align: center;
+  flex: 1;
+  font-size: 14px;
+}
+
+/* CONTAINER */
+.container {
+  max-width: 900px;
+  margin: 20px auto;
+}
+
+/* CARD */
+.card {
+  background: white;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+}
+
+/* BUTTON */
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background: #0b2a4a;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+button:hover {
+  background: #081f36;
+}
+
+.btn-danger {
+  background: red;
+}
+
+.btn-danger:hover {
+  background: darkred;
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+
+th {
+  background: #0b2a4a;
+  color: white;
+}
+
+#status {
+  margin-top: 10px;
+  font-weight: bold;
+  text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-content">
+    <img src="logo-kemenimipas.png" class="logo">
+
+    <div class="title">
+      DASHBOARD ADMIN PENGAMBILAN PASPOR<br>
+      KANTOR IMIGRASI KELAS I TPI POLONIA
+    </div>
+
+    <img src="logo-imigrasi.png" class="logo">
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- UPLOAD -->
+  <div class="card">
+    <h3>Upload Data Excel</h3>
+
+    <input type="file" id="file" accept=".xls,.xlsx">
+
+    <button onclick="uploadExcel()">Upload ke Firebase</button>
+
+    <button class="btn-danger" onclick="hapusSemua()">Hapus Semua Data</button>
+
+    <p id="status"></p>
+  </div>
+
+  <!-- DATA TABLE -->
+  <div class="card">
+    <h3>Data Pengambilan Paspor</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Nama Pemohon</th>
+          <th>No Paspor</th>
+          <th>Tanggal</th>
+          <th>Pengambil</th>
+          <th>No Telepon</th>
+        </tr>
+      </thead>
+      <tbody id="data"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- XLSX -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyC77pb28Mziag1YsweWznokG5JA0ssfmJc",
+  authDomain: "catat-2a83e.firebaseapp.com",
+  projectId: "catat-2a83e"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+/* UPLOAD EXCEL */
+function uploadExcel() {
+  let file = document.getElementById("file").files[0];
+  if (!file) return alert("Pilih file dulu!");
+
+  let reader = new FileReader();
+
+  reader.onload = function(e) {
+    let data = new Uint8Array(e.target.result);
+    let workbook = XLSX.read(data, { type: "array" });
+
+    let sheet = workbook.Sheets[workbook.SheetNames[0]];
+    let rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+    let total = 0;
+
+    rows.forEach(row => {
+      let no_permohonan = "";
+      let nama = "";
+      let paspor = "";
+
+      row.forEach(cell => {
+        let text = String(cell).toLowerCase();
+
+        if (!no_permohonan && /^[0-9]{8,}$/.test(text)) {
+          no_permohonan = text;
+        }
+
+        if (!paspor && /^[a-zA-Z][0-9]+$/.test(text)) {
+          paspor = cell;
+        }
+
+        if (!nama && /^[a-zA-Z\s]{5,}$/.test(cell)) {
+          nama = cell;
+        }
+      });
+
+      if (no_permohonan && nama && paspor) {
+        db.collection("data_pemohon").add({
+          no_permohonan,
+          nama,
+          paspor
+        });
+        total++;
+      }
+    });
+
+    document.getElementById("status").innerHTML =
+      "✅ Upload berhasil! Total: " + total + " data";
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+/* HAPUS DATA */
+function hapusSemua() {
+  if (!confirm("Yakin hapus semua data?")) return;
+
+  db.collection("data_pemohon").get().then(snapshot => {
+    let batch = db.batch();
+    snapshot.forEach(doc => batch.delete(doc.ref));
+    batch.commit();
+
+    document.getElementById("status").innerHTML =
+      "🗑️ Semua data berhasil dihapus!";
+  });
+}
+
+/* REALTIME DATA */
+db.collection("pengambilan_paspor")
+.onSnapshot(snapshot => {
+  let html = "";
+
+  snapshot.forEach(doc => {
+    let d = doc.data();
+
+    html += `
+      <tr>
+        <td>${d.nama}</td>
+        <td>${d.paspor}</td>
+        <td>${d.tanggal}</td>
+        <td>${d.pengambil}</td>
+        <td>${d.telepon}</td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("data").innerHTML = html;
+});
+</script>
+
+</body>
+</html>
