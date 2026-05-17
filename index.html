@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Formulir Pengambilan Paspor</title>
 
 <style>
@@ -11,6 +12,7 @@ body {
   background: #f4f6f9;
 }
 
+/* HEADER */
 .header {
   background: #0b2a4a;
   text-align: center;
@@ -22,6 +24,7 @@ body {
   justify-content: center;
   align-items: center;
   gap: 20px;
+  flex-wrap: wrap;
 }
 
 .logo {
@@ -32,12 +35,15 @@ body {
   color: #f1c40f;
   font-weight: bold;
   font-size: 20px;
+  text-align: center;
 }
 
+/* FORM */
 .container {
+  width: 95%;
   max-width: 500px;
   background: white;
-  margin: 40px auto;
+  margin: 20px auto;
   padding: 25px;
   border-radius: 10px;
   box-shadow: 0 5px 20px rgba(0,0,0,0.1);
@@ -46,31 +52,35 @@ body {
 label {
   font-weight: bold;
   display: block;
-  margin-top: 12px;
+  margin-top: 15px;
+  font-size: 16px;
 }
 
 input {
   width: 100%;
-  padding: 10px;
+  padding: 14px;
   margin-top: 5px;
   border-radius: 6px;
   border: 1px solid #ccc;
+  font-size: 16px;
 }
 
 input[readonly] {
   background: #eee;
 }
 
+/* BUTTON */
 button {
   width: 100%;
-  margin-top: 20px;
-  padding: 12px;
+  margin-top: 25px;
+  padding: 14px;
   background: #0b2a4a;
   border: none;
   font-weight: bold;
   color: white;
   cursor: pointer;
   border-radius: 6px;
+  font-size: 16px;
 }
 
 button:hover {
@@ -87,6 +97,7 @@ button:hover {
 
 <body>
 
+<!-- HEADER -->
 <div class="header">
   <div class="header-content">
     <img src="logo-kemenimipas.png" class="logo">
@@ -100,6 +111,7 @@ button:hover {
   </div>
 </div>
 
+<!-- FORM -->
 <div class="container">
 
   <label>5 Digit Terakhir Nomor Permohonan</label>
@@ -126,7 +138,7 @@ button:hover {
 
 </div>
 
-<!-- FIREBASE (VERSI COMPAT) -->
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
