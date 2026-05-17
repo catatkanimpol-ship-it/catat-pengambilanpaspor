@@ -12,7 +12,6 @@ body {
   margin: 0;
 }
 
-/* HEADER */
 .header {
   background: #0b2a4a;
   padding: 10px;
@@ -26,9 +25,7 @@ body {
   margin: auto;
 }
 
-.logo {
-  width: 50px;
-}
+.logo { width: 50px; }
 
 .title {
   color: #f1c40f;
@@ -38,13 +35,11 @@ body {
   font-size: 14px;
 }
 
-/* CONTAINER */
 .container {
   max-width: 900px;
   margin: 20px auto;
 }
 
-/* CARD */
 .card {
   background: white;
   padding: 20px;
@@ -52,7 +47,6 @@ body {
   border-radius: 10px;
 }
 
-/* BUTTON */
 button {
   width: 100%;
   padding: 10px;
@@ -64,23 +58,22 @@ button {
   border-radius: 6px;
 }
 
-button:hover {
-  background: #081f36;
-}
+button:hover { background: #081f36; }
 
 .btn-danger {
   background: red;
 }
 
-.btn-danger:hover {
-  background: darkred;
+input[type="text"], input[type="file"] {
+  width: 100%;
+  padding: 8px;
+  margin-top: 10px;
 }
 
 /* TABLE */
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
 }
 
 th, td {
@@ -93,18 +86,11 @@ th {
   background: #0b2a4a;
   color: white;
 }
-
-#status {
-  margin-top: 10px;
-  font-weight: bold;
-  text-align: center;
-}
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <div class="header">
   <div class="header-content">
     <img src="logo-kemenimipas.png" class="logo">
@@ -120,7 +106,7 @@ th {
 
 <div class="container">
 
-  <!-- UPLOAD -->
+  <!-- UPLOAD EXCEL -->
   <div class="card">
     <h3>Upload Data Excel</h3>
 
@@ -128,23 +114,28 @@ th {
 
     <button onclick="uploadExcel()">Upload ke Firebase</button>
 
-    <button class="btn-danger" onclick="hapusSemua()">Hapus Semua Data</button>
-
     <p id="status"></p>
   </div>
 
-  <!-- DATA TABLE -->
+  <!-- SEARCH -->
+  <div class="card">
+    <h3>Pencarian Data Pemohon</h3>
+    <input type="text" id="search" placeholder="Ketik nama pemohon..." onkeyup="filterData()">
+  </div>
+
+  <!-- TABLE -->
   <div class="card">
     <h3>Data Pengambilan Paspor</h3>
 
     <table>
       <thead>
         <tr>
-          <th>Nama Pemohon</th>
-          <th>No Paspor</th>
+          <th>Nama</th>
+          <th>Paspor</th>
           <th>Tanggal</th>
           <th>Pengambil</th>
-          <th>No Telepon</th>
+          <th>Telepon</th>
+          <th>Aksi</th>
         </tr>
       </thead>
       <tbody id="data"></tbody>
@@ -170,10 +161,12 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+let semuaData = [];
+
 /* UPLOAD EXCEL */
 function uploadExcel() {
   let file = document.getElementById("file").files[0];
-  if (!file) return alert("Pilih file dulu!");
+  if (!file) return alert("Pilih file!");
 
   let reader = new FileReader();
 
@@ -218,34 +211,29 @@ function uploadExcel() {
     });
 
     document.getElementById("status").innerHTML =
-      "✅ Upload berhasil! Total: " + total + " data";
+      "✅ Upload berhasil: " + total + " data";
   };
 
   reader.readAsArrayBuffer(file);
 }
 
-/* HAPUS DATA */
-function hapusSemua() {
-  if (!confirm("Yakin hapus semua data?")) return;
-
-  db.collection("data_pemohon").get().then(snapshot => {
-    let batch = db.batch();
-    snapshot.forEach(doc => batch.delete(doc.ref));
-    batch.commit();
-
-    document.getElementById("status").innerHTML =
-      "🗑️ Semua data berhasil dihapus!";
-  });
-}
-
 /* REALTIME DATA */
 db.collection("pengambilan_paspor")
 .onSnapshot(snapshot => {
-  let html = "";
+  semuaData = [];
 
   snapshot.forEach(doc => {
-    let d = doc.data();
+    semuaData.push({ id: doc.id, ...doc.data() });
+  });
 
+  tampilkanData(semuaData);
+});
+
+/* TAMPILKAN */
+function tampilkanData(data) {
+  let html = "";
+
+  data.forEach(d => {
     html += `
       <tr>
         <td>${d.nama}</td>
@@ -253,12 +241,33 @@ db.collection("pengambilan_paspor")
         <td>${d.tanggal}</td>
         <td>${d.pengambil}</td>
         <td>${d.telepon}</td>
+        <td>
+          <button onclick="hapus('${d.id}')" style="background:red;">Hapus</button>
+        </td>
       </tr>
     `;
   });
 
   document.getElementById("data").innerHTML = html;
-});
+}
+
+/* SEARCH */
+function filterData() {
+  let keyword = document.getElementById("search").value.toLowerCase();
+
+  let hasil = semuaData.filter(d =>
+    d.nama.toLowerCase().includes(keyword)
+  );
+
+  tampilkanData(hasil);
+}
+
+/* HAPUS */
+function hapus(id) {
+  if (!confirm("Hapus data ini?")) return;
+
+  db.collection("pengambilan_paspor").doc(id).delete();
+}
 </script>
 
 </body>
