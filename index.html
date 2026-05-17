@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Formulir Pengambilan Paspor</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f4f6f9;
+}
+
+.header {
+  background: #0b2a4a;
+  text-align: center;
+  padding: 20px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.logo {
+  width: 70px;
+}
+
+.title {
+  color: #f1c40f;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.container {
+  max-width: 500px;
+  background: white;
+  margin: 40px auto;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+label {
+  font-weight: bold;
+  display: block;
+  margin-top: 12px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+input[readonly] {
+  background: #eee;
+}
+
+button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  background: #0b2a4a;
+  border: none;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+button:hover {
+  background: #081f36;
+}
+
+#status {
+  text-align: center;
+  margin-top: 10px;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="header-content">
+    <img src="logo-kemenimipas.png" class="logo">
+
+    <div class="title">
+      FORMULIR PENGAMBILAN PASPOR<br>
+      KANTOR IMIGRASI KELAS I TPI POLONIA
+    </div>
+
+    <img src="logo-imigrasi.png" class="logo">
+  </div>
+</div>
+
+<div class="container">
+
+  <label>5 Digit Terakhir Nomor Permohonan</label>
+  <input type="text" id="cari" maxlength="5">
+
+  <label>Nama Pemohon</label>
+  <input type="text" id="nama" readonly>
+
+  <label>Nomor Paspor</label>
+  <input type="text" id="paspor" readonly>
+
+  <label>Tanggal Pengambilan</label>
+  <input type="date" id="tanggal">
+
+  <label>Nama Pengambil</label>
+  <input type="text" id="pengambil">
+
+  <label>No Telepon Pengambil</label>
+  <input type="text" id="telepon">
+
+  <button onclick="kirimData()">Kirim Data</button>
+
+  <p id="status"></p>
+
+</div>
+
+<!-- FIREBASE (VERSI COMPAT) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyC77pb28Mziag1YsweWznokG5JA0ssfmJc",
+  authDomain: "catat-2a83e.firebaseapp.com",
+  projectId: "catat-2a83e",
+  storageBucket: "catat-2a83e.firebasestorage.app",
+  messagingSenderId: "457830020525",
+  appId: "1:457830020525:web:009ac7894a79f20b4f5d24",
+  measurementId: "G-1769D8HWWD"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// AUTO ISI DATA
+document.getElementById("cari").addEventListener("keyup", function() {
+  let input = this.value;
+
+  if (input.length === 5) {
+    db.collection("data_pemohon").get().then(snapshot => {
+      let found = false;
+
+      snapshot.forEach(doc => {
+        let data = doc.data();
+
+        if (data.no_permohonan.endsWith(input)) {
+          document.getElementById("nama").value = data.nama;
+          document.getElementById("paspor").value = data.paspor;
+          found = true;
+        }
+      });
+
+      if (!found) {
+        document.getElementById("nama").value = "Data tidak ditemukan";
+        document.getElementById("paspor").value = "-";
+      }
+    });
+  }
+});
+
+// SIMPAN DATA
+function kirimData() {
+  db.collection("pengambilan_paspor").add({
+    nama: document.getElementById("nama").value,
+    paspor: document.getElementById("paspor").value,
+    tanggal: document.getElementById("tanggal").value,
+    pengambil: document.getElementById("pengambil").value,
+    telepon: document.getElementById("telepon").value
+  }).then(() => {
+    document.getElementById("status").innerHTML = "✅ Data berhasil dikirim!";
+  }).catch(() => {
+    document.getElementById("status").innerHTML = "❌ Gagal kirim data";
+  });
+}
+</script>
+
+</body>
+</html>
