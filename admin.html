@@ -211,21 +211,39 @@ function uploadPemohon() {
     let sheet = workbook.Sheets[workbook.SheetNames[0]];
     let rows = XLSX.utils.sheet_to_json(sheet);
 
+    console.log("DATA EXCEL:", rows); // DEBUG
+
+    let berhasil = 0;
+
     rows.forEach(row => {
+
+      // 🔥 fleksibel semua kemungkinan nama kolom
+      let no_permohonan = row["No Permohonan"] || row["no_permohonan"] || row["NO PERMOHONAN"];
+      let nama = row["Nama Pemohon"] || row["nama"] || row["NAMA"];
+      let paspor = row["No Paspor"] || row["paspor"] || row["PASPOR"];
+
+      // 🔥 skip kalau kosong
+      if (!no_permohonan || !nama || !paspor) {
+        console.log("❌ Data dilewati:", row);
+        return;
+      }
+
       db.collection("data_pemohon").add({
-        no_permohonan: String(row.no_permohonan),
-        nama: row.nama,
-        paspor: row.paspor
+        no_permohonan: String(no_permohonan),
+        nama: String(nama),
+        paspor: String(paspor)
       });
+
+      berhasil++;
     });
 
     document.getElementById("statusUpload").innerHTML =
-      "✅ Upload berhasil!";
+      "✅ Upload selesai! Data masuk: " + berhasil;
+
   };
 
   reader.readAsArrayBuffer(file);
 }
-
 /* REALTIME DATA */
 db.collection("pengambilan_paspor")
 .orderBy("tanggal", "desc")
