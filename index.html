@@ -6,9 +6,7 @@
 <title>Formulir Pengambilan Paspor</title>
 
 <style>
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   font-family: 'Segoe UI', Arial;
@@ -19,7 +17,7 @@ body {
 /* HEADER */
 .header {
   background: #0b2a4a;
-  padding: 20px 10px;
+  padding: 15px;
 }
 
 .header-content {
@@ -30,18 +28,14 @@ body {
   margin: auto;
 }
 
-.logo {
-  width: 60px;
-}
+.logo { width: 55px; }
 
 .title {
   color: #f1c40f;
-  font-weight: bold;
   text-align: center;
   flex: 1;
-  font-size: 18px;
-  line-height: 1.4;
-  padding: 0 10px;
+  font-weight: bold;
+  font-size: 16px;
 }
 
 /* CONTAINER */
@@ -49,30 +43,25 @@ body {
   width: 95%;
   max-width: 600px;
   background: white;
-  margin: 30px auto;
-  padding: 30px;
+  margin: 25px auto;
+  padding: 25px;
   border-radius: 12px;
   box-shadow: 0 8px 25px rgba(0,0,0,0.08);
 }
 
-/* LABEL */
+/* INPUT */
 label {
   font-weight: 600;
+  margin-top: 15px;
   display: block;
-  margin-top: 18px;
-  font-size: 15px;
-  color: #333;
 }
 
-/* INPUT */
 input {
   width: 100%;
-  padding: 14px;
-  margin-top: 6px;
+  padding: 12px;
+  margin-top: 5px;
   border-radius: 8px;
   border: 1px solid #ccc;
-  font-size: 15px;
-  transition: 0.2s;
 }
 
 input:focus {
@@ -87,16 +76,14 @@ input[readonly] {
 /* BUTTON */
 button {
   width: 100%;
-  margin-top: 25px;
-  padding: 15px;
+  margin-top: 20px;
+  padding: 14px;
   background: #0b2a4a;
   border: none;
-  font-weight: bold;
   color: white;
-  cursor: pointer;
+  font-weight: bold;
   border-radius: 8px;
-  font-size: 16px;
-  transition: 0.2s;
+  cursor: pointer;
 }
 
 button:hover {
@@ -105,23 +92,13 @@ button:hover {
 
 #status {
   text-align: center;
-  margin-top: 12px;
+  margin-top: 10px;
   font-weight: bold;
 }
 
-/* RESPONSIVE */
 @media (max-width: 600px) {
-  .title {
-    font-size: 14px;
-  }
-
-  .logo {
-    width: 45px;
-  }
-
-  .container {
-    padding: 20px;
-  }
+  .logo { width: 45px; }
+  .title { font-size: 13px; }
 }
 </style>
 </head>
@@ -158,10 +135,10 @@ button:hover {
   <input type="date" id="tanggal">
 
   <label>Nama Pengambil</label>
-  <input type="text" id="pengambil" placeholder="Isi nama pengambil">
+  <input type="text" id="pengambil">
 
   <label>No Telepon Pengambil</label>
-  <input type="text" id="telepon" placeholder="08xxxx">
+  <input type="text" id="telepon">
 
   <button onclick="kirimData()">Kirim Data</button>
 
@@ -175,26 +152,30 @@ button:hover {
 
 <script>
 const firebaseConfig = {
-  apiKey: "ISI PUNYA KAMU",
-  authDomain: "ISI",
-  projectId: "ISI",
+  apiKey: "AIzaSyC77pb28Mziag1YsweWznokG5JA0ssfmJc",
+  authDomain: "catat-2a83e.firebaseapp.com",
+  projectId: "catat-2a83e",
+  storageBucket: "catat-2a83e.firebasestorage.app",
+  messagingSenderId: "457830020525",
+  appId: "1:457830020525:web:009ac7894a79f20b4f5d24"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-/* AUTO ISI */
+/* AUTO ISI DATA */
 document.getElementById("cari").addEventListener("keyup", function() {
   let input = this.value;
 
   if (input.length === 5) {
     db.collection("data_pemohon").get().then(snapshot => {
+
       let found = false;
 
       snapshot.forEach(doc => {
         let data = doc.data();
 
-        if (data.no_permohonan.endsWith(input)) {
+        if (data.no_permohonan && data.no_permohonan.endsWith(input)) {
           document.getElementById("nama").value = data.nama;
           document.getElementById("paspor").value = data.paspor;
           found = true;
@@ -209,17 +190,37 @@ document.getElementById("cari").addEventListener("keyup", function() {
   }
 });
 
-/* SIMPAN */
+/* KIRIM DATA */
 function kirimData() {
+
+  let nama = document.getElementById("nama").value;
+  let paspor = document.getElementById("paspor").value;
+  let tanggal = document.getElementById("tanggal").value;
+  let pengambil = document.getElementById("pengambil").value;
+  let telepon = document.getElementById("telepon").value;
+
+  if (!nama || nama === "Data tidak ditemukan") {
+    alert("Data pemohon tidak valid!");
+    return;
+  }
+
+  if (!tanggal || !pengambil || !telepon) {
+    alert("Harap isi semua data!");
+    return;
+  }
+
   db.collection("pengambilan_paspor").add({
-    nama: document.getElementById("nama").value,
-    paspor: document.getElementById("paspor").value,
-    tanggal: document.getElementById("tanggal").value,
-    pengambil: document.getElementById("pengambil").value,
-    telepon: document.getElementById("telepon").value
-  }).then(() => {
+    nama: nama,
+    paspor: paspor,
+    tanggal: tanggal,
+    pengambil: pengambil,
+    telepon: telepon
+  })
+  .then(() => {
     document.getElementById("status").innerHTML = "✅ Data berhasil dikirim!";
-  }).catch(() => {
+  })
+  .catch((err) => {
+    console.error(err);
     document.getElementById("status").innerHTML = "❌ Gagal kirim data";
   });
 }
