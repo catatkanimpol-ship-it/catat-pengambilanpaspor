@@ -117,17 +117,19 @@ th {
 <div class="header">
   <div class="header-content">
     <img src="logo-kemenimipas.png" class="logo">
+
     <div class="title">
       DASHBOARD ADMIN PENGAMBILAN PASPOR<br>
       KANTOR IMIGRASI KELAS I TPI POLONIA
     </div>
+
     <img src="logo-imigrasi.png" class="logo">
   </div>
 </div>
 
 <div class="container">
 
-  <!-- 🔵 UPLOAD DATA PEMOHON -->
+  <!-- UPLOAD DATA PEMOHON -->
   <div class="card">
     <h3>Upload Data Pemohon (Excel)</h3>
 
@@ -137,21 +139,21 @@ th {
     <p id="statusUpload"></p>
   </div>
 
-  <!-- 🔍 SEARCH -->
+  <!-- SEARCH -->
   <div class="card">
-    <h3>Pencarian Data Pemohon</h3>
+    <h3>Pencarian Data</h3>
     <input type="text" id="search" placeholder="Ketik nama..." onkeyup="filterData()">
   </div>
 
-  <!-- 📥 EXPORT -->
+  <!-- EXPORT -->
   <div class="card">
-    <h3>Export Data Pengambilan</h3>
+    <h3>Export Data</h3>
     <button class="btn-export" onclick="exportExcel()">Download Excel</button>
   </div>
 
-  <!-- 📊 TABLE -->
+  <!-- TABLE -->
   <div class="card">
-    <h3>Data Pengambilan Paspor (Realtime)</h3>
+    <h3>Data Pengambilan Paspor</h3>
 
     <div class="table-container">
       <table>
@@ -184,7 +186,10 @@ th {
 const firebaseConfig = {
   apiKey: "AIzaSyC77pb28Mziag1YsweWznokG5JA0ssfmJc",
   authDomain: "catat-2a83e.firebaseapp.com",
-  projectId: "catat-2a83e"
+  projectId: "catat-2a83e",
+  storageBucket: "catat-2a83e.firebasestorage.app",
+  messagingSenderId: "457830020525",
+  appId: "1:457830020525:web:009ac7894a79f20b4f5d24"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -192,9 +197,7 @@ const db = firebase.firestore();
 
 let semuaData = [];
 
-/* ========================= */
-/* 🔵 UPLOAD DATA PEMOHON */
-/* ========================= */
+/* UPLOAD DATA PEMOHON */
 function uploadPemohon() {
   let file = document.getElementById("filePemohon").files[0];
   if (!file) return alert("Pilih file Excel!");
@@ -216,16 +219,16 @@ function uploadPemohon() {
       });
     });
 
-    document.getElementById("statusUpload").innerHTML = "✅ Upload berhasil!";
+    document.getElementById("statusUpload").innerHTML =
+      "✅ Upload berhasil!";
   };
 
   reader.readAsArrayBuffer(file);
 }
 
-/* ========================= */
-/* 📊 REALTIME DATA */
-/* ========================= */
-db.collection("pengambilan_paspor").orderBy("tanggal","desc")
+/* REALTIME DATA */
+db.collection("pengambilan_paspor")
+.orderBy("tanggal", "desc")
 .onSnapshot(snapshot => {
   semuaData = [];
 
@@ -236,9 +239,7 @@ db.collection("pengambilan_paspor").orderBy("tanggal","desc")
   tampilkanData(semuaData);
 });
 
-/* ========================= */
-/* TAMPILKAN DATA */
-/* ========================= */
+/* TAMPILKAN */
 function tampilkanData(data) {
   let html = "";
 
@@ -250,7 +251,9 @@ function tampilkanData(data) {
         <td>${d.tanggal}</td>
         <td>${d.pengambil}</td>
         <td>${d.telepon}</td>
-        <td><button class="btn-danger" onclick="hapus('${d.id}')">Hapus</button></td>
+        <td>
+          <button class="btn-danger" onclick="hapus('${d.id}')">Hapus</button>
+        </td>
       </tr>
     `;
   });
@@ -258,9 +261,7 @@ function tampilkanData(data) {
   document.getElementById("data").innerHTML = html;
 }
 
-/* ========================= */
 /* SEARCH */
-/* ========================= */
 function filterData() {
   let keyword = document.getElementById("search").value.toLowerCase();
 
@@ -271,18 +272,14 @@ function filterData() {
   tampilkanData(hasil);
 }
 
-/* ========================= */
 /* HAPUS */
-/* ========================= */
 function hapus(id) {
   if (!confirm("Yakin hapus data?")) return;
 
   db.collection("pengambilan_paspor").doc(id).delete();
 }
 
-/* ========================= */
 /* EXPORT EXCEL */
-/* ========================= */
 function exportExcel() {
   let dataExport = semuaData.map(d => ({
     Nama: d.nama,
