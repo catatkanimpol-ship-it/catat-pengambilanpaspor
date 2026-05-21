@@ -72,6 +72,7 @@ button {
   font-weight: bold;
 }
 
+.btn-primary { background: #0b2a4a; color: white; width: 100%; }
 .btn-export { background: green; color: white; width: 100%; }
 .btn-danger { background: red; color: white; }
 
@@ -97,6 +98,11 @@ th {
   color: white;
 }
 
+#statusUpload {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
 /* RESPONSIVE */
 @media (max-width: 600px) {
   .title { font-size: 13px; }
@@ -107,6 +113,7 @@ th {
 
 <body>
 
+<!-- HEADER -->
 <div class="header">
   <div class="header-content">
     <img src="logo-kemenimipas.png" class="logo">
@@ -120,19 +127,29 @@ th {
 
 <div class="container">
 
-  <!-- SEARCH -->
+  <!-- 🔵 UPLOAD DATA PEMOHON -->
   <div class="card">
-    <h3>Pencarian Nama Pemohon</h3>
+    <h3>Upload Data Pemohon (Excel)</h3>
+
+    <input type="file" id="filePemohon">
+    <button class="btn-primary" onclick="uploadPemohon()">Upload ke Firebase</button>
+
+    <p id="statusUpload"></p>
+  </div>
+
+  <!-- 🔍 SEARCH -->
+  <div class="card">
+    <h3>Pencarian Data Pemohon</h3>
     <input type="text" id="search" placeholder="Ketik nama..." onkeyup="filterData()">
   </div>
 
-  <!-- EXPORT -->
+  <!-- 📥 EXPORT -->
   <div class="card">
     <h3>Export Data Pengambilan</h3>
     <button class="btn-export" onclick="exportExcel()">Download Excel</button>
   </div>
 
-  <!-- TABLE -->
+  <!-- 📊 TABLE -->
   <div class="card">
     <h3>Data Pengambilan Paspor (Realtime)</h3>
 
@@ -140,11 +157,11 @@ th {
       <table>
         <thead>
           <tr>
-            <th>Nama Pemohon</th>
-            <th>No Paspor</th>
+            <th>Nama</th>
+            <th>Paspor</th>
             <th>Tanggal</th>
-            <th>Nama Pengambil</th>
-            <th>No Telepon</th>
+            <th>Pengambil</th>
+            <th>Telepon</th>
             <th>Aksi</th>
           </tr>
         </thead>
@@ -175,8 +192,40 @@ const db = firebase.firestore();
 
 let semuaData = [];
 
-/* REALTIME DATA DARI INDEX */
-db.collection("pengambilan_paspor").orderBy("tanggal", "desc")
+/* ========================= */
+/* 🔵 UPLOAD DATA PEMOHON */
+/* ========================= */
+function uploadPemohon() {
+  let file = document.getElementById("filePemohon").files[0];
+  if (!file) return alert("Pilih file Excel!");
+
+  let reader = new FileReader();
+
+  reader.onload = function(e) {
+    let data = new Uint8Array(e.target.result);
+    let workbook = XLSX.read(data, { type: "array" });
+
+    let sheet = workbook.Sheets[workbook.SheetNames[0]];
+    let rows = XLSX.utils.sheet_to_json(sheet);
+
+    rows.forEach(row => {
+      db.collection("data_pemohon").add({
+        no_permohonan: String(row.no_permohonan),
+        nama: row.nama,
+        paspor: row.paspor
+      });
+    });
+
+    document.getElementById("statusUpload").innerHTML = "✅ Upload berhasil!";
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+/* ========================= */
+/* 📊 REALTIME DATA */
+/* ========================= */
+db.collection("pengambilan_paspor").orderBy("tanggal","desc")
 .onSnapshot(snapshot => {
   semuaData = [];
 
@@ -187,7 +236,9 @@ db.collection("pengambilan_paspor").orderBy("tanggal", "desc")
   tampilkanData(semuaData);
 });
 
-/* TAMPILKAN */
+/* ========================= */
+/* TAMPILKAN DATA */
+/* ========================= */
 function tampilkanData(data) {
   let html = "";
 
@@ -199,9 +250,7 @@ function tampilkanData(data) {
         <td>${d.tanggal}</td>
         <td>${d.pengambil}</td>
         <td>${d.telepon}</td>
-        <td>
-          <button class="btn-danger" onclick="hapus('${d.id}')">Hapus</button>
-        </td>
+        <td><button class="btn-danger" onclick="hapus('${d.id}')">Hapus</button></td>
       </tr>
     `;
   });
@@ -209,7 +258,9 @@ function tampilkanData(data) {
   document.getElementById("data").innerHTML = html;
 }
 
+/* ========================= */
 /* SEARCH */
+/* ========================= */
 function filterData() {
   let keyword = document.getElementById("search").value.toLowerCase();
 
@@ -220,21 +271,25 @@ function filterData() {
   tampilkanData(hasil);
 }
 
+/* ========================= */
 /* HAPUS */
+/* ========================= */
 function hapus(id) {
-  if (!confirm("Hapus data ini?")) return;
+  if (!confirm("Yakin hapus data?")) return;
 
   db.collection("pengambilan_paspor").doc(id).delete();
 }
 
-/* EXPORT */
+/* ========================= */
+/* EXPORT EXCEL */
+/* ========================= */
 function exportExcel() {
   let dataExport = semuaData.map(d => ({
-    "Nama Pemohon": d.nama,
-    "No Paspor": d.paspor,
-    "Tanggal Pengambilan": d.tanggal,
-    "Nama Pengambil": d.pengambil,
-    "No Telepon": d.telepon
+    Nama: d.nama,
+    Paspor: d.paspor,
+    Tanggal: d.tanggal,
+    Pengambil: d.pengambil,
+    Telepon: d.telepon
   }));
 
   let ws = XLSX.utils.json_to_sheet(dataExport);
