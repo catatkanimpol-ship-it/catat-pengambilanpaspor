@@ -3,88 +3,104 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Dashboard Paspor</title>
+<title>Dashboard Admin Paspor</title>
 
 <style>
+* { box-sizing: border-box; }
+
 body {
-  font-family: Arial;
-  background: #f4f6f9;
+  font-family: 'Segoe UI', Arial;
   margin: 0;
+  background: #eef2f7;
 }
 
+/* HEADER */
 .header {
   background: #0b2a4a;
-  padding: 10px;
+  padding: 15px;
 }
 
 .header-content {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  max-width: 900px;
+  justify-content: space-between;
+  max-width: 1100px;
   margin: auto;
 }
 
-.logo { width: 50px; }
+.logo { width: 55px; }
 
 .title {
   color: #f1c40f;
-  font-weight: bold;
   text-align: center;
   flex: 1;
-  font-size: 14px;
+  font-weight: bold;
+  font-size: 16px;
 }
 
+/* CONTAINER */
 .container {
-  max-width: 900px;
-  margin: 20px auto;
+  max-width: 1100px;
+  margin: 25px auto;
+  padding: 0 15px;
 }
 
 .card {
   background: white;
   padding: 20px;
   margin-bottom: 20px;
-  border-radius: 10px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
 }
 
+/* INPUT */
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+/* BUTTON */
 button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  background: #0b2a4a;
-  color: white;
+  padding: 12px;
   border: none;
-  cursor: pointer;
-  border-radius: 6px;
-}
-
-button:hover { background: #081f36; }
-
-.btn-danger {
-  background: red;
-}
-
-input[type="text"], input[type="file"] {
-  width: 100%;
-  padding: 8px;
+  border-radius: 8px;
   margin-top: 10px;
+  cursor: pointer;
+  font-weight: bold;
 }
+
+.btn-export { background: green; color: white; width: 100%; }
+.btn-danger { background: red; color: white; }
 
 /* TABLE */
+.table-container {
+  overflow-x: auto;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 800px;
 }
 
 th, td {
-  border: 1px solid #ccc;
-  padding: 8px;
+  padding: 10px;
+  border: 1px solid #ddd;
   text-align: center;
 }
 
 th {
   background: #0b2a4a;
   color: white;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .title { font-size: 13px; }
+  .logo { width: 45px; }
 }
 </style>
 </head>
@@ -94,52 +110,48 @@ th {
 <div class="header">
   <div class="header-content">
     <img src="logo-kemenimipas.png" class="logo">
-
     <div class="title">
       DASHBOARD ADMIN PENGAMBILAN PASPOR<br>
       KANTOR IMIGRASI KELAS I TPI POLONIA
     </div>
-
     <img src="logo-imigrasi.png" class="logo">
   </div>
 </div>
 
 <div class="container">
 
-  <!-- UPLOAD EXCEL -->
-  <div class="card">
-    <h3>Upload Data Excel</h3>
-
-    <input type="file" id="file" accept=".xls,.xlsx">
-
-    <button onclick="uploadExcel()">Upload ke Firebase</button>
-
-    <p id="status"></p>
-  </div>
-
   <!-- SEARCH -->
   <div class="card">
-    <h3>Pencarian Data Pemohon</h3>
-    <input type="text" id="search" placeholder="Ketik nama pemohon..." onkeyup="filterData()">
+    <h3>Pencarian Nama Pemohon</h3>
+    <input type="text" id="search" placeholder="Ketik nama..." onkeyup="filterData()">
+  </div>
+
+  <!-- EXPORT -->
+  <div class="card">
+    <h3>Export Data Pengambilan</h3>
+    <button class="btn-export" onclick="exportExcel()">Download Excel</button>
   </div>
 
   <!-- TABLE -->
   <div class="card">
-    <h3>Data Pengambilan Paspor</h3>
+    <h3>Data Pengambilan Paspor (Realtime)</h3>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Nama</th>
-          <th>Paspor</th>
-          <th>Tanggal</th>
-          <th>Pengambil</th>
-          <th>Telepon</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody id="data"></tbody>
-    </table>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Nama Pemohon</th>
+            <th>No Paspor</th>
+            <th>Tanggal</th>
+            <th>Nama Pengambil</th>
+            <th>No Telepon</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="data"></tbody>
+      </table>
+    </div>
+
   </div>
 
 </div>
@@ -163,62 +175,8 @@ const db = firebase.firestore();
 
 let semuaData = [];
 
-/* UPLOAD EXCEL */
-function uploadExcel() {
-  let file = document.getElementById("file").files[0];
-  if (!file) return alert("Pilih file!");
-
-  let reader = new FileReader();
-
-  reader.onload = function(e) {
-    let data = new Uint8Array(e.target.result);
-    let workbook = XLSX.read(data, { type: "array" });
-
-    let sheet = workbook.Sheets[workbook.SheetNames[0]];
-    let rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-    let total = 0;
-
-    rows.forEach(row => {
-      let no_permohonan = "";
-      let nama = "";
-      let paspor = "";
-
-      row.forEach(cell => {
-        let text = String(cell).toLowerCase();
-
-        if (!no_permohonan && /^[0-9]{8,}$/.test(text)) {
-          no_permohonan = text;
-        }
-
-        if (!paspor && /^[a-zA-Z][0-9]+$/.test(text)) {
-          paspor = cell;
-        }
-
-        if (!nama && /^[a-zA-Z\s]{5,}$/.test(cell)) {
-          nama = cell;
-        }
-      });
-
-      if (no_permohonan && nama && paspor) {
-        db.collection("data_pemohon").add({
-          no_permohonan,
-          nama,
-          paspor
-        });
-        total++;
-      }
-    });
-
-    document.getElementById("status").innerHTML =
-      "✅ Upload berhasil: " + total + " data";
-  };
-
-  reader.readAsArrayBuffer(file);
-}
-
-/* REALTIME DATA */
-db.collection("pengambilan_paspor")
+/* REALTIME DATA DARI INDEX */
+db.collection("pengambilan_paspor").orderBy("tanggal", "desc")
 .onSnapshot(snapshot => {
   semuaData = [];
 
@@ -242,7 +200,7 @@ function tampilkanData(data) {
         <td>${d.pengambil}</td>
         <td>${d.telepon}</td>
         <td>
-          <button onclick="hapus('${d.id}')" style="background:red;">Hapus</button>
+          <button class="btn-danger" onclick="hapus('${d.id}')">Hapus</button>
         </td>
       </tr>
     `;
@@ -267,6 +225,23 @@ function hapus(id) {
   if (!confirm("Hapus data ini?")) return;
 
   db.collection("pengambilan_paspor").doc(id).delete();
+}
+
+/* EXPORT */
+function exportExcel() {
+  let dataExport = semuaData.map(d => ({
+    "Nama Pemohon": d.nama,
+    "No Paspor": d.paspor,
+    "Tanggal Pengambilan": d.tanggal,
+    "Nama Pengambil": d.pengambil,
+    "No Telepon": d.telepon
+  }));
+
+  let ws = XLSX.utils.json_to_sheet(dataExport);
+  let wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Data Paspor");
+
+  XLSX.writeFile(wb, "laporan_pengambilan_paspor.xlsx");
 }
 </script>
 
