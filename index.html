@@ -169,30 +169,27 @@ document.getElementById("cari").addEventListener("keyup", function() {
 
   if (input.length === 5) {
 
-    db.collection("data_pemohon").get().then(snapshot => {
+    db.collection("data_pemohon")
+      .where("last5", "==", input)
+      .get()
+      .then(snapshot => {
 
-      let found = false;
-
-      snapshot.forEach(doc => {
-        if (found) return; // 🔥 STOP kalau sudah ketemu
-
-        let data = doc.data();
-
-        if (String(data.no_permohonan).endsWith(input)) {
+        if (!snapshot.empty) {
+          let data = snapshot.docs[0].data();
 
           document.getElementById("nama").value = data.nama;
           document.getElementById("paspor").value = data.paspor;
 
-          found = true;
+        } else {
+          document.getElementById("nama").value = "Data tidak ditemukan";
+          document.getElementById("paspor").value = "-";
         }
+
+      })
+      .catch(err => {
+        console.error(err);
       });
 
-      if (!found) {
-        document.getElementById("nama").value = "Data tidak ditemukan";
-        document.getElementById("paspor").value = "-";
-      }
-
-    });
   }
 });
 /* KIRIM DATA */

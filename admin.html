@@ -228,11 +228,14 @@ function uploadPemohon() {
         return;
       }
 
-      db.collection("data_pemohon").add({
-        no_permohonan: String(no_permohonan),
-        nama: String(nama),
-        paspor: String(paspor)
-      });
+     let last5 = String(no_permohonan).slice(-5);
+
+db.collection("data_pemohon").add({
+  no_permohonan: String(no_permohonan),
+  last5: last5,
+  nama: nama,
+  paspor: paspor
+});
 
       berhasil++;
     });
