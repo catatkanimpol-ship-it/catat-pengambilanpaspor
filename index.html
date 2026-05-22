@@ -168,16 +168,21 @@ document.getElementById("cari").addEventListener("keyup", function() {
   let input = this.value;
 
   if (input.length === 5) {
+
     db.collection("data_pemohon").get().then(snapshot => {
 
       let found = false;
 
       snapshot.forEach(doc => {
+        if (found) return; // 🔥 STOP kalau sudah ketemu
+
         let data = doc.data();
 
-        if (data.no_permohonan && data.no_permohonan.endsWith(input)) {
+        if (String(data.no_permohonan).endsWith(input)) {
+
           document.getElementById("nama").value = data.nama;
           document.getElementById("paspor").value = data.paspor;
+
           found = true;
         }
       });
@@ -186,10 +191,10 @@ document.getElementById("cari").addEventListener("keyup", function() {
         document.getElementById("nama").value = "Data tidak ditemukan";
         document.getElementById("paspor").value = "-";
       }
+
     });
   }
 });
-
 /* KIRIM DATA */
 function kirimData() {
 
