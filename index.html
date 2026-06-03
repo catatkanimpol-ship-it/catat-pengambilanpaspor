@@ -465,8 +465,48 @@
   <script>
     'use strict';
 
-    */
     const YOUTUBE_VIDEO_URL = 'https://youtu.be/ltioT8Vgif8';
+
+function getYouTubeId(urlOrId) {
+  const value = String(urlOrId || '').trim();
+
+  if (!value) return '';
+
+  if (/^[a-zA-Z0-9_-]{11}$/.test(value)) {
+    return value;
+  }
+
+  try {
+    const url = new URL(value);
+
+    if (url.hostname.includes('youtu.be')) {
+      return url.pathname.replace('/', '').slice(0, 11);
+    }
+
+    if (url.searchParams.has('v')) {
+      return url.searchParams.get('v').slice(0, 11);
+    }
+
+    if (url.pathname.includes('/embed/')) {
+      return url.pathname.split('/embed/')[1].slice(0, 11);
+    }
+  } catch (e) {
+    return '';
+  }
+
+  return '';
+}
+
+function setupYouTubeVideo() {
+  const videoId = getYouTubeId(YOUTUBE_VIDEO_URL);
+
+  if (!videoId) return;
+
+  document.getElementById('youtubeIframe').src =
+    `https://www.youtube.com/embed/${videoId}?rel=0`;
+}
+
+setupYouTubeVideo();
 
     const firebaseConfig = {
       apiKey: 'AIzaSyC77pb28Mziag1YsweWznokG5JA0ssfmJc',
