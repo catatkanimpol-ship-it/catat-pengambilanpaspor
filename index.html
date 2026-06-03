@@ -9,9 +9,10 @@
 * { box-sizing: border-box; }
 
 body {
-  font-family: 'Segoe UI', Arial;
+  font-family: 'Segoe UI', Arial, sans-serif;
   margin: 0;
   background: #eef2f7;
+  color: #1f2937;
 }
 
 /* HEADER */
@@ -26,9 +27,14 @@ body {
   justify-content: space-between;
   max-width: 900px;
   margin: auto;
+  gap: 12px;
 }
 
-.logo { width: 55px; }
+.logo {
+  width: 55px;
+  height: 55px;
+  object-fit: contain;
+}
 
 .title {
   color: #f1c40f;
@@ -36,14 +42,106 @@ body {
   flex: 1;
   font-weight: bold;
   font-size: 16px;
+  line-height: 1.35;
 }
 
-/* CONTAINER */
-.container {
+.page-wrap {
   width: 95%;
-  max-width: 600px;
-  background: white;
+  max-width: 700px;
   margin: 25px auto;
+}
+
+/* VIDEO TUTORIAL */
+.tutorial-card {
+  background: #ffffff;
+  margin-bottom: 20px;
+  padding: 22px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+.tutorial-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 16px;
+}
+
+.tutorial-kicker {
+  display: inline-block;
+  margin-bottom: 7px;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.tutorial-title {
+  margin: 0;
+  color: #0b2a4a;
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+.tutorial-desc {
+  margin: 8px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.youtube-button {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  padding: 10px 14px;
+  background: #ff0000;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.youtube-button:hover {
+  background: #cc0000;
+}
+
+.video-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #000000;
+  border-radius: 12px;
+}
+
+.video-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.video-help {
+  margin: 10px 0 0;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.video-help a {
+  color: #dc2626;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* CONTAINER FORM */
+.container {
+  background: white;
   padding: 25px;
   border-radius: 12px;
   box-shadow: 0 8px 25px rgba(0,0,0,0.08);
@@ -62,6 +160,7 @@ input {
   margin-top: 5px;
   border-radius: 8px;
   border: 1px solid #ccc;
+  font-size: 15px;
 }
 
 input:focus {
@@ -84,6 +183,7 @@ button {
   font-weight: bold;
   border-radius: 8px;
   cursor: pointer;
+  font-size: 15px;
 }
 
 button:hover {
@@ -97,8 +197,25 @@ button:hover {
 }
 
 @media (max-width: 600px) {
-  .logo { width: 45px; }
+  .logo { width: 45px; height: 45px; }
   .title { font-size: 13px; }
+
+  .tutorial-card,
+  .container {
+    padding: 18px;
+  }
+
+  .tutorial-header {
+    flex-direction: column;
+  }
+
+  .youtube-button {
+    width: 100%;
+  }
+
+  .tutorial-title {
+    font-size: 18px;
+  }
 }
 </style>
 </head>
@@ -108,42 +225,86 @@ button:hover {
 <!-- HEADER -->
 <div class="header">
   <div class="header-content">
-    <img src="logo-kemenimipas.png" class="logo">
+    <img src="logo-kemenimipas.png" class="logo" alt="Logo Kemenimipas">
 
     <div class="title">
       FORMULIR PENGAMBILAN PASPOR<br>
       KANTOR IMIGRASI KELAS I TPI POLONIA
     </div>
 
-    <img src="logo-imigrasi.png" class="logo">
+    <img src="logo-imigrasi.png" class="logo" alt="Logo Imigrasi">
   </div>
 </div>
 
-<!-- FORM -->
-<div class="container">
+<div class="page-wrap">
 
-  <label>5 Digit Terakhir Nomor Permohonan</label>
-  <input type="text" id="cari" maxlength="5" placeholder="Contoh: 12345">
+  <!-- VIDEO TUTORIAL YOUTUBE -->
+  <section class="tutorial-card" aria-labelledby="tutorialTitle">
+    <div class="tutorial-header">
+      <div>
+        <div class="tutorial-kicker">▶ VIDEO TUTORIAL</div>
+        <h1 class="tutorial-title" id="tutorialTitle">
+          Panduan Pengisian Formulir Pengambilan Paspor
+        </h1>
+        <p class="tutorial-desc">
+          Tonton video ini terlebih dahulu agar pengisian formulir berjalan benar.
+        </p>
+      </div>
 
-  <label>Nama Pemohon</label>
-  <input type="text" id="nama" readonly>
+      <a
+        class="youtube-button"
+        href="https://www.youtube.com/watch?v=ltioT8Vgif8"
+        target="_blank"
+        rel="noopener noreferrer">
+        Buka YouTube
+      </a>
+    </div>
 
-  <label>Nomor Paspor</label>
-  <input type="text" id="paspor" readonly>
+    <div class="video-frame">
+      <iframe
+        src="https://www.youtube.com/embed/ltioT8Vgif8?rel=0&modestbranding=1&playsinline=1"
+        title="Video Tutorial Pengambilan Paspor"
+        loading="lazy"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen>
+      </iframe>
+    </div>
 
-  <label>Tanggal Pengambilan</label>
-  <input type="date" id="tanggal">
+    <p class="video-help">
+      Jika video tidak tampil, klik
+      <a href="https://www.youtube.com/watch?v=ltioT8Vgif8" target="_blank" rel="noopener noreferrer">
+        buka langsung di YouTube
+      </a>.
+    </p>
+  </section>
 
-  <label>Nama Pengambil</label>
-  <input type="text" id="pengambil">
+  <!-- FORM -->
+  <div class="container">
 
-  <label>No Telepon Pengambil</label>
-  <input type="text" id="telepon">
+    <label for="cari">5 Digit Terakhir Nomor Permohonan</label>
+    <input type="text" id="cari" maxlength="5" inputmode="numeric" autocomplete="off" placeholder="Contoh: 12345">
 
-  <button onclick="kirimData()">Kirim Data</button>
+    <label for="nama">Nama Pemohon</label>
+    <input type="text" id="nama" readonly>
 
-  <p id="status"></p>
+    <label for="paspor">Nomor Paspor</label>
+    <input type="text" id="paspor" readonly>
 
+    <label for="tanggal">Tanggal Pengambilan</label>
+    <input type="date" id="tanggal">
+
+    <label for="pengambil">Nama Pengambil</label>
+    <input type="text" id="pengambil" autocomplete="name">
+
+    <label for="telepon">No Telepon Pengambil</label>
+    <input type="tel" id="telepon" inputmode="tel" autocomplete="tel">
+
+    <button type="button" onclick="kirimData()">Kirim Data</button>
+
+    <p id="status"></p>
+
+  </div>
 </div>
 
 <!-- FIREBASE -->
@@ -151,6 +312,8 @@ button:hover {
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
 <script>
+'use strict';
+
 const firebaseConfig = {
   apiKey: "AIzaSyC77pb28Mziag1YsweWznokG5JA0ssfmJc",
   authDomain: "catat-2a83e.firebaseapp.com",
@@ -163,45 +326,60 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+const cariInput = document.getElementById("cari");
+const namaInput = document.getElementById("nama");
+const pasporInput = document.getElementById("paspor");
+const statusText = document.getElementById("status");
+
+function bersihkanDataPemohon() {
+  namaInput.value = "";
+  pasporInput.value = "";
+  statusText.innerHTML = "";
+}
+
 /* AUTO ISI DATA */
-document.getElementById("cari").addEventListener("keyup", function() {
-  let input = this.value;
+cariInput.addEventListener("input", function() {
+  let input = this.value.replace(/\D/g, "").slice(0, 5);
+  this.value = input;
 
-  if (input.length === 5) {
-
-    db.collection("data_pemohon")
-      .where("last5", "==", input)
-      .get()
-      .then(snapshot => {
-
-        if (!snapshot.empty) {
-          let data = snapshot.docs[0].data();
-
-          document.getElementById("nama").value = data.nama;
-          document.getElementById("paspor").value = data.paspor;
-
-        } else {
-          document.getElementById("nama").value = "Data tidak ditemukan";
-          document.getElementById("paspor").value = "-";
-        }
-
-      })
-      .catch(err => {
-        console.error(err);
-      });
-
+  if (input.length < 5) {
+    bersihkanDataPemohon();
+    return;
   }
+
+  statusText.innerHTML = "Mencari data...";
+
+  db.collection("data_pemohon")
+    .where("last5", "==", input)
+    .limit(1)
+    .get()
+    .then(snapshot => {
+      if (!snapshot.empty) {
+        let data = snapshot.docs[0].data();
+        namaInput.value = data.nama || "";
+        pasporInput.value = data.paspor || "";
+        statusText.innerHTML = "✅ Data ditemukan";
+      } else {
+        namaInput.value = "Data tidak ditemukan";
+        pasporInput.value = "-";
+        statusText.innerHTML = "❌ Data tidak ditemukan";
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      statusText.innerHTML = "❌ Gagal mengambil data";
+    });
 });
+
 /* KIRIM DATA */
 function kirimData() {
-
-  let nama = document.getElementById("nama").value;
-  let paspor = document.getElementById("paspor").value;
+  let nama = namaInput.value.trim();
+  let paspor = pasporInput.value.trim();
   let tanggal = document.getElementById("tanggal").value;
-  let pengambil = document.getElementById("pengambil").value;
-  let telepon = document.getElementById("telepon").value;
+  let pengambil = document.getElementById("pengambil").value.trim();
+  let telepon = document.getElementById("telepon").value.trim();
 
-  if (!nama || nama === "Data tidak ditemukan") {
+  if (!nama || nama === "Data tidak ditemukan" || !paspor || paspor === "-") {
     alert("Data pemohon tidak valid!");
     return;
   }
@@ -216,14 +394,18 @@ function kirimData() {
     paspor: paspor,
     tanggal: tanggal,
     pengambil: pengambil,
-    telepon: telepon
+    telepon: telepon,
+    dibuatPada: firebase.firestore.FieldValue.serverTimestamp()
   })
   .then(() => {
-    document.getElementById("status").innerHTML = "✅ Data berhasil dikirim!";
+    statusText.innerHTML = "✅ Data berhasil dikirim!";
+    document.getElementById("tanggal").value = "";
+    document.getElementById("pengambil").value = "";
+    document.getElementById("telepon").value = "";
   })
   .catch((err) => {
     console.error(err);
-    document.getElementById("status").innerHTML = "❌ Gagal kirim data";
+    statusText.innerHTML = "❌ Gagal kirim data";
   });
 }
 </script>
